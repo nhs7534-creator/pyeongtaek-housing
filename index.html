@@ -340,7 +340,7 @@ const CONFIG = {
   // 문의 전화번호 (숫자만)
   tel: '010-5618-4787',
 
-  // 전체 호수
+  // 예시 데이터(데모)에서만 쓰는 호수 — 실제 화면의 전체 호수는 시트에 입력된 줄 수로 자동 계산됩니다
   totalUnits: 100,
 
   // 자동 새로고침 간격(초)
@@ -483,12 +483,13 @@ function buildChips(){
 function render(){
   const vacantAll = ALL.filter(u => u.status === S.VACANT);
   const soonAll   = ALL.filter(u => u.status === S.SOON);
+  const totalNow  = ALL.length; // 시트에 실제로 입력된 호수 — 반납·추가로 바뀌어도 자동 반영
 
   document.getElementById('boardRead').innerHTML =
-    `집 ${CONFIG.totalUnits}채 가운데 <b>${vacantAll.length}채</b>가 비어 있어요.` +
+    `집 ${totalNow}채 가운데 <b>${vacantAll.length}채</b>가 비어 있어요.` +
     (soonAll.length ? ` 곧 비는 집도 ${soonAll.length}채 있습니다.` : '');
   document.getElementById('footTotal').textContent =
-    `전체 ${CONFIG.totalUnits}호 · 빈집 ${vacantAll.length}호 · ${timeText(updatedAt)}`;
+    `전체 ${totalNow}호 · 빈집 ${vacantAll.length}호 · ${timeText(updatedAt)}`;
 
   const pick = arr => filterComplex === '전체' ? arr : arr.filter(u => u.complex === filterComplex);
   const sortKey = document.getElementById('sort').value;
