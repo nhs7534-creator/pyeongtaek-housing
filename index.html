@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>평택형 사회주택 빈집 현황 | 사회적협동조합 플러스평택</title>
+<title>평택형 사회주택 공실 현황 | 사회적협동조합 플러스평택</title>
 <meta name="description" content="평택형 사회주택 100호 중 지금 들어갈 수 있는 집을 실시간으로 확인하세요. 보증금과 월 임대료, 입주 가능일까지 한눈에.">
 
 <!-- 카카오톡·SNS 공유 -->
 <meta property="og:type" content="website">
-<meta property="og:title" content="평택형 사회주택 빈집 현황">
+<meta property="og:title" content="평택형 사회주택 공실 현황">
 <meta property="og:description" content="지금 들어갈 수 있는 집을 바로 확인하세요.">
 <meta property="og:site_name" content="사회적협동조합 플러스평택">
 <meta property="og:url" content="https://nhs7534-creator.github.io/pyeongtaek-housing/">
@@ -73,6 +73,7 @@
     border-radius:999px;
     padding:7px 14px 7px 12px;
     font-size:14px;color:#E7F0EA;
+    white-space:nowrap;
   }
   .pulse{
     width:8px;height:8px;border-radius:50%;background:#8FE3B6;
@@ -88,7 +89,7 @@
     font-size:14px;font-family:inherit;cursor:pointer;padding:8px;
     text-decoration:underline;text-underline-offset:3px;
   }
-  .stamp-row{display:flex;align-items:center;}
+  .stamp-row{display:flex;align-items:center;flex-wrap:wrap;row-gap:8px;}
 
   /* ── 현황 요약 ───────────────────── */
   .board{
@@ -278,7 +279,7 @@
 
   <header>
     <p class="eyebrow">사회적협동조합 플러스평택</p>
-    <h1>평택형 사회주택<br>빈집 현황</h1>
+    <h1>평택형 사회주택<br>공실 현황</h1>
     <div class="stamp-row">
       <span class="stamp"><span class="pulse"></span><span id="stampText">확인하는 중…</span></span>
       <button class="refresh-btn" id="refreshBtn" type="button">새로 고침</button>
@@ -429,7 +430,8 @@ function timeText(iso){
   const h = d.getHours();
   const ampm = h < 12 ? '오전' : '오후';
   const hh = h % 12 === 0 ? 12 : h % 12;
-  return ampm + ' ' + hh + '시 ' + String(d.getMinutes()).padStart(2,'0') + '분 기준';
+  return d.getFullYear() + '년 ' + (d.getMonth()+1) + '월 ' + d.getDate() + '일 ' +
+         ampm + ' ' + hh + '시 기준';
 }
 
 /* ── 불러오기 ── */
