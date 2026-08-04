@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>평택형 사회주택 빈집 현황 | 사회적협동조합 플러스평택</title>
+<meta name="description" content="평택형 사회주택 100호 중 지금 들어갈 수 있는 집을 실시간으로 확인하세요. 보증금과 월 임대료, 입주 가능일까지 한눈에.">
+
+<!-- 카카오톡·SNS 공유 -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="평택형 사회주택 빈집 현황">
+<meta property="og:description" content="지금 들어갈 수 있는 집을 바로 확인하세요.">
+<meta property="og:site_name" content="사회적협동조합 플러스평택">
+<meta name="theme-color" content="#14382C">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+
+<style>
+  :root{
+    --ink:#14201B;
+    --paper:#EDF0EC;
+    --surface:#FFFFFF;
+    --green-900:#14382C;
+    --green-700:#1F5A45;
+    --green-200:#BCD6C8;
+    --gold:#C6870A;
+    --gold-soft:#F6E6C0;
+    --muted:#5F736B;
+    --line:#D6DFD8;
+    --grey:#B6BFBA;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(20,56,44,.06), 0 6px 18px rgba(20,56,44,.06);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,system-ui,'Malgun Gothic',sans-serif;
+    font-size:17px;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:calc(96px + env(safe-area-inset-bottom));
+  }
+  .wrap{max-width:560px;margin:0 auto;}
+
+  /* ── 헤더 ───────────────────────── */
+  header{
+    background:var(--green-900);
+    color:#fff;
+    padding:22px 20px 26px;
+  }
+  .eyebrow{
+    font-size:13px;letter-spacing:.14em;font-weight:600;
+    color:var(--green-200);margin:0 0 6px;
+  }
+  h1{
+    font-family:'Gowun Batang',serif;
+    font-size:30px;line-height:1.25;font-weight:700;
+    margin:0 0 14px;letter-spacing:-.01em;
+  }
+  .stamp{
+    display:inline-flex;align-items:center;gap:8px;
+    background:rgba(255,255,255,.12);
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:999px;
+    padding:7px 14px 7px 12px;
+    font-size:14px;color:#E7F0EA;
+  }
+  .pulse{
+    width:8px;height:8px;border-radius:50%;background:#8FE3B6;
+    box-shadow:0 0 0 0 rgba(143,227,182,.7);
+    animation:pulse 2.2s infinite;
+  }
+  @keyframes pulse{
+    70%{box-shadow:0 0 0 9px rgba(143,227,182,0);}
+    100%{box-shadow:0 0 0 0 rgba(143,227,182,0);}
+  }
+  .refresh-btn{
+    margin-left:auto;background:none;border:none;color:#BCD6C8;
+    font-size:14px;font-family:inherit;cursor:pointer;padding:8px;
+    text-decoration:underline;text-underline-offset:3px;
+  }
+  .stamp-row{display:flex;align-items:center;}
+
+  /* ── 현황 요약 ───────────────────── */
+  .board{
+    background:var(--green-700);
+    padding:28px 20px 30px;
+  }
+  @media (prefers-reduced-motion:reduce){
+    .pulse{animation:none;}
+  }
+  .board-eyebrow{
+    font-size:13px;letter-spacing:.1em;font-weight:600;
+    color:#CFE2D7;margin:0 0 10px;
+  }
+  .board-read{
+    color:#fff;font-size:19px;line-height:1.5;margin:0;
+  }
+  .board-read b{
+    font-family:'Gowun Batang',serif;
+    font-size:38px;font-weight:700;color:#F5C24C;
+    padding:0 2px;
+  }
+
+  /* ── 필터 ───────────────────────── */
+  .controls{
+    background:var(--paper);
+    padding:18px 0 4px;
+    position:sticky;top:0;z-index:5;
+    box-shadow:0 6px 12px -10px rgba(20,32,27,.35);
+  }
+  .chips{
+    display:flex;gap:8px;overflow-x:auto;
+    padding:0 20px 12px;
+    scrollbar-width:none;
+  }
+  .chips::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:0 0 auto;
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    color:var(--muted);
+    border-radius:999px;
+    padding:11px 18px;
+    font-size:15px;font-weight:600;font-family:inherit;
+    cursor:pointer;white-space:nowrap;
+    min-height:46px;
+  }
+  .chip[aria-pressed="true"]{
+    background:var(--green-900);border-color:var(--green-900);color:#fff;
+  }
+  .sortbar{
+    display:flex;align-items:center;gap:10px;
+    padding:0 20px 14px;
+  }
+  .sortbar label{font-size:14px;color:var(--muted);}
+  select{
+    flex:1;font-family:inherit;font-size:15px;
+    padding:11px 12px;min-height:46px;
+    border:1.5px solid var(--line);border-radius:10px;
+    background:var(--surface);color:var(--ink);
+  }
+
+  /* ── 목록 ───────────────────────── */
+  main{padding:6px 20px 32px;}
+  .group-title{
+    font-size:15px;font-weight:700;color:var(--muted);
+    letter-spacing:.02em;
+    margin:22px 0 12px;
+    display:flex;align-items:center;gap:9px;
+  }
+  .group-title::after{content:"";flex:1;height:1px;background:var(--line);}
+
+  .plate{
+    position:relative;
+    background:var(--surface);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px 18px 16px 22px;
+    margin-bottom:12px;
+    overflow:hidden;
+  }
+  .plate::before{
+    content:"";position:absolute;left:0;top:0;bottom:0;width:7px;
+    background:var(--gold);
+  }
+  .plate.soon::before{background:var(--green-200);}
+  .plate-head{
+    display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  }
+  .addr{
+    font-family:'Gowun Batang',serif;
+    font-size:24px;font-weight:700;line-height:1.2;
+    letter-spacing:-.01em;
+  }
+  .addr small{
+    display:block;font-family:'Pretendard Variable',Pretendard,sans-serif;
+    font-size:14px;font-weight:600;color:var(--muted);
+    letter-spacing:0;margin-bottom:3px;
+  }
+  .badge{
+    flex:0 0 auto;
+    font-size:13px;font-weight:700;
+    padding:5px 11px;border-radius:999px;
+    background:var(--gold-soft);color:#7A5203;
+  }
+  .plate.soon .badge{background:#E2EFE7;color:var(--green-700);}
+  .addr-line{
+    display:flex;align-items:flex-start;gap:5px;
+    font-size:14px;color:var(--muted);
+    margin:6px 0 0;line-height:1.5;
+  }
+  .addr-line svg{flex:0 0 auto;margin-top:2px;}
+  .spec{
+    font-size:15px;color:var(--muted);margin:9px 0 12px;
+  }
+  .price{
+    display:flex;flex-wrap:wrap;gap:8px 22px;
+    border-top:1px solid var(--line);
+    padding-top:12px;
+  }
+  .price div{min-width:110px;}
+  .price dt{font-size:13px;color:var(--muted);margin:0 0 1px;}
+  .price dd{
+    margin:0;font-size:20px;font-weight:700;
+    font-variant-numeric:tabular-nums;letter-spacing:-.01em;
+  }
+  .movein{
+    margin:12px 0 0;font-size:15px;font-weight:600;color:var(--green-700);
+  }
+  .note{
+    margin:8px 0 0;font-size:14px;color:var(--muted);
+  }
+
+  /* ── 비어있음 / 오류 ─────────────── */
+  .state{
+    background:var(--surface);
+    border:1.5px dashed var(--line);
+    border-radius:var(--radius);
+    padding:28px 22px;text-align:center;
+    margin-top:18px;
+  }
+  .state h2{font-size:19px;margin:0 0 8px;font-family:'Gowun Batang',serif;}
+  .state p{margin:0;color:var(--muted);font-size:15px;line-height:1.65;}
+
+  .skeleton{
+    height:132px;background:var(--surface);border-radius:var(--radius);
+    margin-bottom:12px;opacity:.6;
+  }
+
+  /* ── 안내 ───────────────────────── */
+  .info{
+    margin:26px 20px 0;padding:18px 20px;
+    background:#E3E9E4;border-radius:var(--radius);
+    font-size:14px;color:var(--muted);line-height:1.7;
+  }
+  .info b{color:var(--ink);}
+
+  footer{
+    padding:26px 20px 10px;text-align:center;
+    font-size:13px;color:var(--muted);line-height:1.7;
+  }
+
+  /* ── 하단 고정 전화 ─────────────── */
+  .callbar{
+    position:fixed;left:0;right:0;bottom:0;z-index:20;
+    padding:12px 20px calc(12px + env(safe-area-inset-bottom));
+    background:linear-gradient(to top,var(--paper) 72%,rgba(237,240,236,0));
+  }
+  .call{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    max-width:520px;margin:0 auto;
+    background:var(--green-900);color:#fff;
+    text-decoration:none;
+    font-size:19px;font-weight:700;
+    padding:18px;border-radius:14px;
+    box-shadow:0 8px 22px rgba(20,56,44,.28);
+    min-height:60px;
+  }
+  .call:active{transform:translateY(1px);}
+
+  :focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px;}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <header>
+    <p class="eyebrow">사회적협동조합 플러스평택</p>
+    <h1>평택형 사회주택<br>빈집 현황</h1>
+    <div class="stamp-row">
+      <span class="stamp"><span class="pulse"></span><span id="stampText">확인하는 중…</span></span>
+      <button class="refresh-btn" id="refreshBtn" type="button">새로 고침</button>
+    </div>
+  </header>
+
+  <section class="board" aria-label="전체 현황">
+    <p class="board-eyebrow">지금 이 순간</p>
+    <p class="board-read" id="boardRead">불러오는 중입니다.</p>
+  </section>
+
+  <div class="controls">
+    <div class="chips" id="chips" role="group" aria-label="단지 고르기"></div>
+    <div class="sortbar">
+      <label for="sort">정렬</label>
+      <select id="sort">
+        <option value="rent">달 임대료가 낮은 집부터</option>
+        <option value="deposit">보증금이 낮은 집부터</option>
+        <option value="area">넓은 집부터</option>
+        <option value="date">빨리 들어갈 수 있는 집부터</option>
+      </select>
+    </div>
+  </div>
+
+  <main id="list">
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+  </main>
+
+  <div class="info">
+    <b>이 화면은 어떻게 만들어지나요?</b><br>
+    담당 직원이 집 상태를 바꾸면 이 화면에 바로 반영됩니다. 1분마다 저절로 최신 정보를 다시 불러옵니다.
+    보증금과 임대료는 소득 기준에 따라 달라질 수 있으니, 정확한 금액은 전화로 확인해 주세요.
+  </div>
+
+  <footer>
+    사회적협동조합 플러스평택 · 평택형 사회주택<br>
+    <span id="footTotal"></span>
+  </footer>
+
+</div>
+
+<div class="callbar">
+  <a class="call" id="callLink" href="tel:0310000000">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+    전화로 문의하기
+  </a>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   설정 — 이 부분만 고치면 됩니다
+   ══════════════════════════════════════════════ */
+const CONFIG = {
+  // 구글 앱스스크립트 배포 주소(/exec 로 끝나는 주소)를 넣으세요
+  apiUrl: '',
+
+  // 문의 전화번호 (숫자만)
+  tel: '031-000-0000',
+
+  // 전체 호수
+  totalUnits: 100,
+
+  // 자동 새로고침 간격(초)
+  refreshSec: 60,
+
+  // true = 예시 데이터로 보기 / false = 실제 시트 연결
+  isDemo: true
+};
+
+/* ── 상태값 ── */
+const S = { VACANT:'공실', SOON:'입주예정', FIXING:'수선중', LIVING:'입주중' };
+
+let ALL = [];
+let updatedAt = null;
+let filterComplex = '전체';
+
+/* ── 예시 데이터 ── */
+function demoData(){
+  const complexes = ['새뜸마을', '고덕들안', '통복나눔'];
+  const addresses = {
+    '새뜸마을': '경기도 평택시 소사벌로12번길 34',
+    '고덕들안': '경기도 평택시 고덕여염1로 45',
+    '통복나눔': '경기도 평택시 통복시장로 8'
+  };
+  const layouts = ['원룸', '분리형 원룸', '방 2개'];
+  const out = [];
+  for (let i = 0; i < CONFIG.totalUnits; i++){
+    const c = complexes[i % 3];
+    const dong = 101 + (i % 3);
+    const ho = 201 + Math.floor(i / 3);
+    let status = S.LIVING;
+    if (i % 5 === 0 && out.filter(u=>u.status===S.VACANT).length < 20) status = S.VACANT;
+    else if (i % 17 === 0) status = S.SOON;
+    else if (i % 29 === 0) status = S.FIXING;
+    const areaIdx = i % 3;
+    out.push({
+      complex: c,
+      address: addresses[c] + ' ' + dong + '동',
+      unit: dong + '동 ' + ho + '호',
+      area: [24, 31, 39][areaIdx],
+      layout: layouts[areaIdx],
+      deposit: [3000000, 5000000, 7000000][areaIdx],
+      rent: [120000, 165000, 210000][areaIdx],
+      status: status,
+      availableFrom: i % 4 === 0 ? '' : (i % 7 === 0 ? '수시입주가능' : '2026-08-' + String(1 + (i % 20)).padStart(2,'0')),
+      note: i % 11 === 0 ? '엘리베이터 바로 앞, 볕이 잘 듭니다' : ''
+    });
+  }
+  return { updatedAt: new Date().toISOString(), units: out };
+}
+
+/* ── 값 다듬기 ── */
+function toNum(v){
+  if (typeof v === 'number') return v;
+  if (!v) return 0;
+  const s = String(v).replace(/,/g,'').trim();
+  const man = s.match(/^([\d.]+)\s*만/);
+  if (man) return Math.round(parseFloat(man[1]) * 10000);
+  const n = parseFloat(s.replace(/[^\d.]/g,''));
+  return isNaN(n) ? 0 : n;
+}
+function money(v){
+  const n = toNum(v);
+  if (!n) return '없음';
+  if (n >= 10000 && n % 10000 === 0) return (n/10000).toLocaleString() + '만 원';
+  return n.toLocaleString() + '원';
+}
+function moveIn(raw){
+  const text = String(raw || '').trim();
+  if (!text) return '입주 가능일은 전화로 문의해 주세요';
+  if (text.includes('수시')) return '날짜 상관없이 편하실 때 들어가실 수 있어요';
+  const d = new Date(text);
+  if (isNaN(d)) return text; // 담당자가 다른 문구를 적은 경우 그대로 보여줌
+  const today = new Date(); today.setHours(0,0,0,0);
+  if (d <= today) return '지금 바로 들어갈 수 있어요';
+  return (d.getMonth()+1) + '월 ' + d.getDate() + '일부터 들어갈 수 있어요';
+}
+function dateVal(raw){
+  const text = String(raw || '').trim();
+  if (!text) return Infinity;          // 미정 → 정렬 시 맨 뒤로
+  if (text.includes('수시')) return 0;  // 수시입주가능 → 정렬 시 맨 앞으로
+  const d = new Date(text);
+  return isNaN(d) ? Infinity : d.getTime();
+}
+function timeText(iso){
+  const d = iso ? new Date(iso) : new Date();
+  const h = d.getHours();
+  const ampm = h < 12 ? '오전' : '오후';
+  const hh = h % 12 === 0 ? 12 : h % 12;
+  return ampm + ' ' + hh + '시 ' + String(d.getMinutes()).padStart(2,'0') + '분 기준';
+}
+
+/* ── 불러오기 ── */
+async function load(){
+  document.getElementById('stampText').textContent = '확인하는 중…';
+  try {
+    let data;
+    if (CONFIG.isDemo || !CONFIG.apiUrl){
+      data = demoData();
+    } else {
+      const res = await fetch(CONFIG.apiUrl + '?t=' + Date.now());
+      if (!res.ok) throw new Error('불러오기 실패');
+      data = await res.json();
+    }
+    ALL = (data.units || []).filter(u => u && u.unit);
+    updatedAt = data.updatedAt || new Date().toISOString();
+    document.getElementById('stampText').textContent = timeText(updatedAt);
+    buildChips();
+    render();
+  } catch (e){
+    document.getElementById('stampText').textContent = '연결이 잠시 끊겼어요';
+    document.getElementById('boardRead').textContent = '지금은 정보를 불러오지 못했습니다.';
+    document.getElementById('list').innerHTML =
+      '<div class="state"><h2>지금은 정보를 불러오지 못했어요</h2>' +
+      '<p>인터넷 연결을 확인한 뒤 위쪽 ‘새로 고침’을 눌러 주세요.<br>' +
+      '급하시면 아래 초록색 버튼으로 전화 주시면 바로 확인해 드립니다.</p></div>';
+  }
+}
+
+/* ── 단지 칩 ── */
+function buildChips(){
+  const box = document.getElementById('chips');
+  if (box.dataset.built) return;
+  const names = ['전체', ...new Set(ALL.map(u => u.complex).filter(Boolean))];
+  box.innerHTML = names.map(n =>
+    `<button class="chip" type="button" data-c="${n}" aria-pressed="${n===filterComplex}">${n}</button>`
+  ).join('');
+  box.addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    filterComplex = b.dataset.c;
+    [...box.children].forEach(c => c.setAttribute('aria-pressed', c === b));
+    render();
+  });
+  box.dataset.built = '1';
+}
+
+/* ── 그리기 ── */
+function render(){
+  const vacantAll = ALL.filter(u => u.status === S.VACANT);
+  const soonAll   = ALL.filter(u => u.status === S.SOON);
+
+  document.getElementById('boardRead').innerHTML =
+    `집 ${CONFIG.totalUnits}채 가운데 <b>${vacantAll.length}채</b>가 비어 있어요.` +
+    (soonAll.length ? ` 곧 비는 집도 ${soonAll.length}채 있습니다.` : '');
+  document.getElementById('footTotal').textContent =
+    `전체 ${CONFIG.totalUnits}호 · 빈집 ${vacantAll.length}호 · ${timeText(updatedAt)}`;
+
+  const pick = arr => filterComplex === '전체' ? arr : arr.filter(u => u.complex === filterComplex);
+  const sortKey = document.getElementById('sort').value;
+  const sorter = {
+    rent:    (a,b) => toNum(a.rent) - toNum(b.rent),
+    deposit: (a,b) => toNum(a.deposit) - toNum(b.deposit),
+    area:    (a,b) => toNum(b.area) - toNum(a.area),
+    date:    (a,b) => dateVal(a.availableFrom) - dateVal(b.availableFrom)
+  }[sortKey];
+
+  const vacant = pick(vacantAll).sort(sorter);
+  const soon   = pick(soonAll).sort(sorter);
+  const list   = document.getElementById('list');
+
+  if (!vacant.length && !soon.length){
+    list.innerHTML =
+      '<div class="state"><h2>' +
+      (filterComplex === '전체' ? '지금은 비어 있는 집이 없어요' : filterComplex + '에는 지금 빈집이 없어요') +
+      '</h2><p>빈집이 생기면 이 화면에 바로 올라옵니다.<br>' +
+      '기다림 신청은 아래 초록색 버튼으로 전화 주시면 받아 드려요.</p></div>';
+    return;
+  }
+
+  let html = '';
+  if (vacant.length){
+    html += `<p class="group-title">지금 들어갈 수 있는 집 ${vacant.length}채</p>`;
+    html += vacant.map(u => card(u)).join('');
+  }
+  if (soon.length){
+    html += `<p class="group-title">곧 비는 집 ${soon.length}채</p>`;
+    html += soon.map(u => card(u, true)).join('');
+  }
+  list.innerHTML = html;
+}
+
+const PIN_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+function card(u, isSoon){
+  return `
+  <article class="plate${isSoon ? ' soon' : ''}">
+    <div class="plate-head">
+      <h3 class="addr"><small>${u.complex || ''}</small>${u.unit}</h3>
+      <span class="badge">${isSoon ? '곧 비어요' : '빈집'}</span>
+    </div>
+    ${u.address ? `<p class="addr-line">${PIN_ICON}<span>${u.address}</span></p>` : ''}
+    <p class="spec">${u.layout || ''}${u.area ? ' · 전용 ' + toNum(u.area) + '㎡' : ''}</p>
+    <dl class="price">
+      <div><dt>보증금</dt><dd>${money(u.deposit)}</dd></div>
+      <div><dt>달마다 내는 임대료</dt><dd>${money(u.rent)}</dd></div>
+    </dl>
+    <p class="movein">${moveIn(u.availableFrom)}</p>
+    ${u.note ? `<p class="note">${u.note}</p>` : ''}
+  </article>`;
+}
+
+/* ── 시작 ── */
+document.getElementById('sort').addEventListener('change', render);
+document.getElementById('refreshBtn').addEventListener('click', load);
+const telLink = document.getElementById('callLink');
+telLink.href = 'tel:' + CONFIG.tel.replace(/[^\d+]/g,'');
+telLink.setAttribute('aria-label', '전화로 문의하기 ' + CONFIG.tel);
+
+load();
+setInterval(load, CONFIG.refreshSec * 1000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) load(); });
+</script>
+</body>
+</html>
