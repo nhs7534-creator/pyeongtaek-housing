@@ -139,6 +139,35 @@
   .chip[aria-pressed="true"]{
     background:var(--green-900);border-color:var(--green-900);color:#fff;
   }
+  .price-toggle-row{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:10px;flex-wrap:wrap;
+    padding:0 20px 12px;
+  }
+  .price-toggle{
+    display:inline-flex;gap:3px;
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:999px;padding:4px;
+  }
+  .ptab{
+    border:none;background:none;font-family:inherit;
+    font-size:14px;font-weight:700;color:var(--muted);
+    padding:9px 16px;border-radius:999px;
+    cursor:pointer;min-height:40px;
+  }
+  .ptab[aria-pressed="true"]{background:var(--green-900);color:#fff;}
+  .pinfo{
+    border:none;background:none;font-family:inherit;
+    font-size:14px;color:var(--green-700);font-weight:600;
+    text-decoration:underline;text-underline-offset:3px;
+    cursor:pointer;padding:8px 2px;white-space:nowrap;
+  }
+  .pinfo-desc{
+    margin:0 20px 14px;padding:14px 16px;
+    background:#E3E9E4;border-radius:12px;
+    font-size:14px;color:var(--ink);line-height:1.65;
+  }
   .sortbar{
     display:flex;align-items:center;gap:10px;
     padding:0 20px 14px;
@@ -292,6 +321,14 @@
   </section>
 
   <div class="controls">
+    <div class="price-toggle-row">
+      <div class="price-toggle" role="group" aria-label="가격 기준 선택">
+        <button class="ptab" type="button" data-mode="general" aria-pressed="true">일반</button>
+        <button class="ptab" type="button" data-mode="vulnerable" aria-pressed="false">취약계층</button>
+      </div>
+      <button class="pinfo" type="button" id="pinfoBtn" aria-expanded="false" aria-controls="pinfoDesc">취약계층이란?</button>
+    </div>
+    <p class="pinfo-desc" id="pinfoDesc" hidden>기초생활수급자, 차상위계층, 장애인 등 중위소득 50% 이하인 분들을 말합니다. 해당되시면 위에서 '취약계층'을 눌러 보증금·임대료를 확인하세요.</p>
     <div class="chips" id="chips" role="group" aria-label="단지 고르기"></div>
     <div class="sortbar">
       <label for="sort">정렬</label>
@@ -312,7 +349,7 @@
   <div class="info">
     <b>이 화면은 어떻게 만들어지나요?</b><br>
     담당 직원이 집 상태를 바꾸면 이 화면에 바로 반영됩니다. 1분마다 저절로 최신 정보를 다시 불러옵니다.
-    보증금과 임대료는 소득 기준에 따라 달라질 수 있으니, 정확한 금액은 전화로 확인해 주세요.
+    보증금과 임대료는 취약계층·일반 여부에 따라 위 목록에서 다르게 표시됩니다. 그 외 개별 사정으로 달라질 수 있으니, 정확한 금액은 전화로 확인해 주세요.
   </div>
 
   <footer>
@@ -335,7 +372,7 @@
    ══════════════════════════════════════════════ */
 const CONFIG = {
   // 구글 앱스스크립트 배포 주소(/exec 로 끝나는 주소)를 넣으세요
-  apiUrl: 'https://script.google.com/macros/s/AKfycbwhgIeza1z_oPMPAIAAKmscuM8sNGNJz33_hOj4IpZJ5FOpkOLWN-sknUrfsUxjHvFifA/exec',
+  apiUrl: 'https://script.google.com/macros/s/AKfycbyT7DYeULrbvAd6cOt2i621A2JXpYGye2jiakTMjsODsyhhqzJyxtTA6SvamG3pVt2dZg/exec',
 
   // 문의 전화번호 (숫자만)
   tel: '010-5618-4787',
@@ -356,6 +393,7 @@ const S = { VACANT:'공실', SOON:'입주예정', FIXING:'수선중', LIVING:'�
 let ALL = [];
 let updatedAt = null;
 let filterComplex = '전체';
+let priceMode = 'general'; // 'general' | 'vulnerable'
 
 /* ── 예시 데이터 ── */
 function demoData(){
@@ -365,7 +403,7 @@ function demoData(){
     '고덕들안': '경기도 평택시 고덕여염1로 45',
     '통복나눔': '경기도 평택시 통복시장로 8'
   };
-  const layouts = ['원룸', '분리형 원룸', '방 2개'];
+  const layouts = ['1', '1', '2'];
   const out = [];
   for (let i = 0; i < CONFIG.totalUnits; i++){
     const c = complexes[i % 3];
@@ -381,12 +419,16 @@ function demoData(){
       address: addresses[c] + ' ' + dong + '동',
       unit: dong + '동 ' + ho + '호',
       area: [24, 31, 39][areaIdx],
+      elevator: i % 3 !== 0,
       layout: layouts[areaIdx],
-      deposit: [3000000, 5000000, 7000000][areaIdx],
-      rent: [120000, 165000, 210000][areaIdx],
+      options: i % 2 === 0 ? '풀옵션' : '',
+      depositVulnerable: [1000000, 2000000, 3000000][areaIdx],
+      rentVulnerable: [80000, 110000, 140000][areaIdx],
+      depositGeneral: [3000000, 5000000, 7000000][areaIdx],
+      rentGeneral: [120000, 165000, 210000][areaIdx],
       status: status,
       availableFrom: i % 4 === 0 ? '' : (i % 7 === 0 ? '수시입주가능' : '2026-08-' + String(1 + (i % 20)).padStart(2,'0')),
-      note: i % 11 === 0 ? '엘리베이터 바로 앞, 볕이 잘 듭니다' : ''
+      note: i % 11 === 0 ? '조용한 위치, 볕이 잘 듭니다' : ''
     });
   }
   return { updatedAt: new Date().toISOString(), units: out };
@@ -407,6 +449,13 @@ function money(v){
   if (!n) return '없음';
   if (n >= 10000 && n % 10000 === 0) return (n/10000).toLocaleString() + '만 원';
   return n.toLocaleString() + '원';
+}
+function layoutText(raw){
+  const t = String(raw || '').trim();
+  if (!t) return '';
+  if (t === '1') return '원룸';
+  if (/^\d+$/.test(t)) return `방 ${t}개`;
+  return t; // '분리형 원룸'처럼 텍스트를 직접 적은 경우 그대로 표시
 }
 function moveIn(raw){
   const text = String(raw || '').trim();
@@ -493,9 +542,11 @@ function render(){
 
   const pick = arr => filterComplex === '전체' ? arr : arr.filter(u => u.complex === filterComplex);
   const sortKey = document.getElementById('sort').value;
+  const dep  = u => priceMode === 'vulnerable' ? u.depositVulnerable : u.depositGeneral;
+  const rent = u => priceMode === 'vulnerable' ? u.rentVulnerable : u.rentGeneral;
   const sorter = {
-    rent:    (a,b) => toNum(a.rent) - toNum(b.rent),
-    deposit: (a,b) => toNum(a.deposit) - toNum(b.deposit),
+    rent:    (a,b) => toNum(rent(a)) - toNum(rent(b)),
+    deposit: (a,b) => toNum(dep(a)) - toNum(dep(b)),
     area:    (a,b) => toNum(b.area) - toNum(a.area),
     date:    (a,b) => dateVal(a.availableFrom) - dateVal(b.availableFrom)
   }[sortKey];
@@ -528,6 +579,8 @@ function render(){
 const PIN_ICON = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
 
 function card(u, isSoon){
+  const dep  = priceMode === 'vulnerable' ? u.depositVulnerable : u.depositGeneral;
+  const rent = priceMode === 'vulnerable' ? u.rentVulnerable : u.rentGeneral;
   return `
   <article class="plate${isSoon ? ' soon' : ''}">
     <div class="plate-head">
@@ -535,10 +588,10 @@ function card(u, isSoon){
       <span class="badge">${isSoon ? '곧 비어요' : '빈집'}</span>
     </div>
     ${u.address ? `<p class="addr-line">${PIN_ICON}<span>${u.address}</span></p>` : ''}
-    <p class="spec">${u.layout || ''}${u.area ? ' · 전용 ' + toNum(u.area) + '㎡' : ''}</p>
+    <p class="spec">${layoutText(u.layout)}${u.area ? ' · 전용 ' + toNum(u.area) + '㎡' : ''}${u.elevator ? ' · 엘리베이터 있음' : ''}${u.options ? ' · ' + u.options : ''}</p>
     <dl class="price">
-      <div><dt>보증금</dt><dd>${money(u.deposit)}</dd></div>
-      <div><dt>달마다 내는 임대료</dt><dd>${money(u.rent)}</dd></div>
+      <div><dt>보증금${priceMode === 'vulnerable' ? ' (취약계층)' : ''}</dt><dd>${money(dep)}</dd></div>
+      <div><dt>달마다 내는 임대료</dt><dd>${money(rent)}</dd></div>
     </dl>
     <p class="movein">${moveIn(u.availableFrom)}</p>
     ${u.note ? `<p class="note">${u.note}</p>` : ''}
@@ -551,6 +604,21 @@ document.getElementById('refreshBtn').addEventListener('click', load);
 const telLink = document.getElementById('callLink');
 telLink.href = 'tel:' + CONFIG.tel.replace(/[^\d+]/g,'');
 telLink.setAttribute('aria-label', '전화로 문의하기 ' + CONFIG.tel);
+
+document.querySelector('.price-toggle').addEventListener('click', e => {
+  const b = e.target.closest('.ptab');
+  if (!b) return;
+  priceMode = b.dataset.mode;
+  [...b.parentElement.children].forEach(c => c.setAttribute('aria-pressed', c === b ? 'true' : 'false'));
+  render();
+});
+const pinfoBtn = document.getElementById('pinfoBtn');
+const pinfoDesc = document.getElementById('pinfoDesc');
+pinfoBtn.addEventListener('click', () => {
+  const willShow = pinfoDesc.hidden;
+  pinfoDesc.hidden = !willShow;
+  pinfoBtn.setAttribute('aria-expanded', String(willShow));
+});
 
 load();
 setInterval(load, CONFIG.refreshSec * 1000);
