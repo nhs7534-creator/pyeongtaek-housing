@@ -419,7 +419,7 @@ function demoData(){
       address: addresses[c] + ' ' + dong + '동',
       unit: dong + '동 ' + ho + '호',
       area: [24, 31, 39][areaIdx],
-      elevator: i % 3 !== 0,
+      elevator: i % 3 === 0 ? 'x' : (i % 3 === 1 ? 'o' : ''),
       layout: layouts[areaIdx],
       options: i % 2 === 0 ? '풀옵션' : '',
       depositVulnerable: [1000000, 2000000, 3000000][areaIdx],
@@ -456,6 +456,12 @@ function layoutText(raw){
   if (t === '1') return '원룸';
   if (/^\d+$/.test(t)) return `방 ${t}개`;
   return t; // '분리형 원룸'처럼 텍스트를 직접 적은 경우 그대로 표시
+}
+function elevatorText(raw){
+  const t = String(raw || '').trim().toLowerCase();
+  if (t === 'o') return ' · 엘리베이터 있음';
+  if (t === 'x') return ' · 엘리베이터 없음';
+  return ''; // 빈칸(모름)이면 아무 표시도 하지 않음
 }
 function moveIn(raw){
   const text = String(raw || '').trim();
@@ -588,7 +594,7 @@ function card(u, isSoon){
       <span class="badge">${isSoon ? '곧 비어요' : '빈집'}</span>
     </div>
     ${u.address ? `<p class="addr-line">${PIN_ICON}<span>${u.address}</span></p>` : ''}
-    <p class="spec">${layoutText(u.layout)}${u.area ? ' · 전용 ' + toNum(u.area) + '㎡' : ''}${u.elevator ? ' · 엘리베이터 있음' : ''}${u.options ? ' · ' + u.options : ''}</p>
+    <p class="spec">${layoutText(u.layout)}${u.area ? ' · 전용 ' + toNum(u.area) + '㎡' : ''}${elevatorText(u.elevator)}${u.options ? ' · ' + u.options : ''}</p>
     <dl class="price">
       <div><dt>보증금${priceMode === 'vulnerable' ? ' (취약계층)' : ''}</dt><dd>${money(dep)}</dd></div>
       <div><dt>달마다 내는 임대료</dt><dd>${money(rent)}</dd></div>
