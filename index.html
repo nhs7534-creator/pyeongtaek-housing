@@ -329,7 +329,7 @@
       <button class="pinfo" type="button" id="pinfoBtn" aria-expanded="false" aria-controls="pinfoDesc">취약계층이란?</button>
     </div>
     <p class="pinfo-desc" id="pinfoDesc" hidden>기초생활수급자, 차상위계층, 장애인 등 중위소득 50% 이하인 분들을 말합니다. 해당되시면 위에서 '취약계층'을 눌러 보증금·임대료를 확인하세요.</p>
-    <div class="chips" id="chips" role="group" aria-label="단지 고르기"></div>
+    <div class="chips" id="chips" role="group" aria-label="지역 고르기"></div>
     <div class="sortbar">
       <label for="sort">정렬</label>
       <select id="sort">
@@ -392,16 +392,16 @@ const S = { VACANT:'공실', SOON:'입주예정', FIXING:'수선중', LIVING:'�
 
 let ALL = [];
 let updatedAt = null;
-let filterComplex = '전체';
+let filterDong = '전체';
 let priceMode = 'general'; // 'general' | 'vulnerable'
 
 /* ── 예시 데이터 ── */
 function demoData(){
   const complexes = ['새뜸마을', '고덕들안', '통복나눔'];
   const addresses = {
-    '새뜸마을': '경기도 평택시 소사벌로12번길 34',
-    '고덕들안': '경기도 평택시 고덕여염1로 45',
-    '통복나눔': '경기도 평택시 통복시장로 8'
+    '새뜸마을': '경기도 평택시 소사벌로12번길 34 (비전동)',
+    '고덕들안': '경기도 평택시 고덕여염1로 45 (고덕동)',
+    '통복나눔': '경기도 평택시 통복시장로 8 (통복동)'
   };
   const layouts = ['1', '1', '2'];
   const out = [];
@@ -502,6 +502,7 @@ async function load(){
       data = await res.json();
     }
     ALL = (data.units || []).filter(u => u && u.unit);
+    ALL.forEach(u => { u.dong = u.dong || extractDong(u.address); }); // 서버가 못 찾았을 때만 보완
     updatedAt = data.updatedAt || new Date().toISOString();
     document.getElementById('stampText').textContent = timeText(updatedAt);
     buildChips();
@@ -516,18 +517,31 @@ async function load(){
   }
 }
 
-/* ── 단지 칩 ── */
+/* ── 주소에서 읍면동 뽑아내기 ── */
+const EUP_MYEON_RE = /(팽성읍|안중읍|청북읍|포승읍|고덕면|서탄면|오성면|진위면|현덕면)/;
+function extractDong(address){
+  const addr = String(address || '');
+  const paren = addr.match(/\(([^)]+)\)/);       // "...(서정동)" 처럼 괄호 안 동 이름 우선
+  if (paren && /[동리]$/.test(paren[1].trim())) return paren[1].trim();
+  const m = addr.match(EUP_MYEON_RE);             // 도로명주소에 읍·면 이름이 직접 있는 경우
+  if (m) return m[1];
+  return '';
+}
+
+/* ── 지역(읍면동) 칩 ── */
 function buildChips(){
   const box = document.getElementById('chips');
   if (box.dataset.built) return;
-  const names = ['전체', ...new Set(ALL.map(u => u.complex).filter(Boolean))];
+  const found = [...new Set(ALL.map(u => u.dong).filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, 'ko'));
+  const names = ['전체', ...found];
   box.innerHTML = names.map(n =>
-    `<button class="chip" type="button" data-c="${n}" aria-pressed="${n===filterComplex}">${n}</button>`
+    `<button class="chip" type="button" data-c="${n}" aria-pressed="${n===filterDong}">${n}</button>`
   ).join('');
   box.addEventListener('click', e => {
     const b = e.target.closest('.chip');
     if (!b) return;
-    filterComplex = b.dataset.c;
+    filterDong = b.dataset.c;
     [...box.children].forEach(c => c.setAttribute('aria-pressed', c === b));
     render();
   });
@@ -546,7 +560,7 @@ function render(){
   document.getElementById('footTotal').textContent =
     `전체 ${totalNow}호 · 빈집 ${vacantAll.length}호 · ${timeText(updatedAt)}`;
 
-  const pick = arr => filterComplex === '전체' ? arr : arr.filter(u => u.complex === filterComplex);
+  const pick = arr => filterDong === '전체' ? arr : arr.filter(u => u.dong === filterDong);
   const sortKey = document.getElementById('sort').value;
   const dep  = u => priceMode === 'vulnerable' ? u.depositVulnerable : u.depositGeneral;
   const rent = u => priceMode === 'vulnerable' ? u.rentVulnerable : u.rentGeneral;
@@ -564,7 +578,7 @@ function render(){
   if (!vacant.length && !soon.length){
     list.innerHTML =
       '<div class="state"><h2>' +
-      (filterComplex === '전체' ? '지금은 비어 있는 집이 없어요' : filterComplex + '에는 지금 빈집이 없어요') +
+      (filterDong === '전체' ? '지금은 비어 있는 집이 없어요' : filterDong + '에는 지금 빈집이 없어요') +
       '</h2><p>빈집이 생기면 이 화면에 바로 올라옵니다.<br>' +
       '기다림 신청은 아래 초록색 버튼으로 전화 주시면 받아 드려요.</p></div>';
     return;
